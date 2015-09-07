@@ -1,0 +1,13 @@
+{
+  "extends": "@dominicbarnes/node",
+  "ecmaFeatures": {
+    "blockBindings": true,
+    "classes": true,
+    "modules": true,
+    "objectLiteralComputedProperties": true,
+    "objectLiteralDuplicateProperties": true,
+    "objectLiteralShorthandMethods": true,
+    "objectLiteralShorthandProperties": true,
+    "templateStrings": true
+  }
+}
