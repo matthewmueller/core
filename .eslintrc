@@ -1,8 +1,10 @@
 {
   "extends": "@dominicbarnes/node",
   "ecmaFeatures": {
+    "arrowFunctions": true,
     "blockBindings": true,
     "classes": true,
+    "generators": true,
     "modules": true,
     "objectLiteralComputedProperties": true,
     "objectLiteralDuplicateProperties": true,
