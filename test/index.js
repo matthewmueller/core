@@ -37,6 +37,26 @@ describe('Bundl', function () {
     assert.strictEqual(bundl.config.root, conf.root);
   });
 
+  describe('#extensions(type, [list])', function () {
+    context('without a list argument', function () {
+      it('should return an array of extensions', function () {
+        let bundl = new Bundl();
+        assert.deepEqual(bundl.extensions('js'), [ '.js', '.json' ]);
+        assert.deepEqual(bundl.extensions('css'), [ '.css' ]);
+      });
+    });
+
+    context('with a list argument', function () {
+      it('should add to the set of extensions', function () {
+        let bundl = new Bundl();
+        bundl.extensions('js', [ '.coffee' ]);
+        assert.deepEqual(bundl.extensions('js'), [ '.js', '.json', '.coffee' ]);
+        bundl.extensions('css', [ '.gif', '.jpg', '.jpeg', '.png' ]);
+        assert.deepEqual(bundl.extensions('css'), [ '.css', '.gif', '.jpg', '.jpeg', '.png' ]);
+      });
+    });
+  });
+
   describe('#analyze(entry, [options])', function () {
     it('should return a Promise', function () {
       let bundl = new Bundl({ root: fixture('no-dependencies') });
@@ -173,6 +193,27 @@ describe('Bundl', function () {
             assert.deepEqual(tree.graph.overallOrder(), [
               fixture('only-remote-dependency/node_modules/a/index.js'),
               fixture('only-remote-dependency/index.js')
+            ]);
+          });
+        });
+      });
+
+      context.only('with an unknown dependency type', function () {
+        let bundl = new Bundl({ root: fixture('unknown-dependency-type') });
+
+        it('should throw a useful error', function () {
+          return assert.isRejected(bundl.analyze('index.js'), /^Error: Unknown file type$/);
+        });
+      });
+
+      context('with a json dependency', function () {
+        let bundl = new Bundl({ root: fixture('json-dependency') });
+
+        it('should include the file in the tree', function () {
+          return bundl.analyze('index.js').then(function (tree) {
+            assert.deepEqual(tree.graph.overallOrder(), [
+              fixture('json-dependency/a.json'),
+              fixture('json-dependency/index.js')
             ]);
           });
         });
