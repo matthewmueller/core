@@ -4,6 +4,7 @@
     "arrowFunctions": true,
     "blockBindings": true,
     "classes": true,
+    "forOf": true,
     "generators": true,
     "modules": true,
     "objectLiteralComputedProperties": true,
