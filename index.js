@@ -1,7 +1,7 @@
 
 'use strict';
 
-let Builder = require('./builder');
+let Builder = require('./lib/builder');
 
 
 exports = module.exports = function () {
