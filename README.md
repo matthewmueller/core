@@ -1,3 +1,3 @@
-# bundl
+# core
 
-> A pluggable, front-end code builder
+The core of the mako build runner
