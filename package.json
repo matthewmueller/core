@@ -1,9 +1,8 @@
 {
-  "name": "bundl",
+  "name": "mako",
   "version": "0.0.0",
-  "description": "A pluggable front-end code bundler",
-  "main": "lib/builder.js",
-  "repository": "dominicbarnes/bundl",
+  "description": "A pluggable front-end code makoer",
+  "repository": "mako/core",
   "dependencies": {
     "array-flatten": "^1.1.1",
     "co": "^4.6.0",

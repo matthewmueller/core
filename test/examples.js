@@ -13,12 +13,12 @@ let fixture = path.resolve.bind(path, __dirname, 'examples');
 
 describe('examples', function () {
   describe('html', function () {
-    let bundl = new Builder();
+    let mako = new Builder();
 
-    bundl.use(function (bundl) {
+    mako.use(function (mako) {
       // html
-      bundl.use(plugins.text('html'));
-      bundl.dependencies('html', function (file, tree, bundl, done) {
+      mako.use(plugins.text('html'));
+      mako.dependencies('html', function (file, tree, mako, done) {
         jsdom.env(file.text, function (err, window) {
           if (err) done(err);
 
@@ -35,14 +35,14 @@ describe('examples', function () {
       });
 
       // js
-      bundl.use(plugins.text('js'));
+      mako.use(plugins.text('js'));
 
       // css
-      bundl.use(plugins.text('css'));
+      mako.use(plugins.text('css'));
     });
 
     it('should analyze and generate the expected tree', function () {
-      return bundl.analyze(fixture('html/index.html')).then(function (tree) {
+      return mako.analyze(fixture('html/index.html')).then(function (tree) {
         let html = fixture('html/index.html');
         let js = fixture('html/index.js');
         let css = fixture('html/index.css');
