@@ -2,7 +2,7 @@
   "name": "mako",
   "version": "0.0.0",
   "description": "A pluggable front-end code makoer",
-  "repository": "mako/core",
+  "repository": "makojs/core",
   "dependencies": {
     "array-flatten": "^1.1.1",
     "co": "^4.6.0",
