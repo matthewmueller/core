@@ -394,6 +394,13 @@ describe('Builder()', function () {
         assert.strictEqual(builder, mako);
       }
     });
+
+    it('should be chainable', function () {
+      let mako = new Builder();
+      assert.strictEqual(mako.use(plugin), mako);
+
+      function plugin() {}
+    });
   });
 
   describe('#analyze(...entries)', function () {
