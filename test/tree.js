@@ -11,15 +11,7 @@ describe('Tree()', function () {
 
   it('should be empty by default', function () {
     let tree = new Tree();
-
-    assert.deepEqual(tree.toObject(), {
-      graph: {
-        directed: true,
-        type: 'dependency',
-        nodes: [],
-        edges: []
-      }
-    });
+    assert.equal(tree.size(), 0);
   });
 
   describe('#addNode(key, [data])', function () {
@@ -27,9 +19,7 @@ describe('Tree()', function () {
       let tree = new Tree();
       tree.addNode('a');
 
-      assert.deepEqual(tree.toObject().graph.nodes, [
-        { id: 'a' }
-      ]);
+      assert.isTrue(tree.hasNode('a'));
     });
 
     it('should not create duplicates if the node already exists', function () {
@@ -37,37 +27,14 @@ describe('Tree()', function () {
       tree.addNode('a');
       tree.addNode('a');
 
-      assert.deepEqual(tree.toObject().graph.nodes, [
-        { id: 'a' }
-      ]);
+      assert.isTrue(tree.hasNode('a'));
     });
 
     context('with data', function () {
-      it('should add a label to the vertex', function () {
+      it('should store than value with the node', function () {
         let tree = new Tree();
-        tree.addNode('a', { label: 'A' });
-
-        assert.deepEqual(tree.toObject().graph.nodes, [
-          { id: 'a', label: 'A' }
-        ]);
-      });
-
-      it('should add a type', function () {
-        let tree = new Tree();
-        tree.addNode('a', { type: 'A' });
-
-        assert.deepEqual(tree.toObject().graph.nodes, [
-          { id: 'a', type: 'A' }
-        ]);
-      });
-
-      it('should add all other keys to metadata', function () {
-        let tree = new Tree();
-        tree.addNode('a', { a: 'A' });
-
-        assert.deepEqual(tree.toObject().graph.nodes, [
-          { id: 'a', metadata: { a: 'A' } }
-        ]);
+        tree.addNode('a', 'A');
+        assert.strictEqual(tree.getNode('a'), 'A');
       });
     });
   });
@@ -130,35 +97,23 @@ describe('Tree()', function () {
       tree.addNode('b');
       tree.addDependency('a', 'b');
 
-      assert.deepEqual(tree.toObject().graph.edges, [
-        { source: 'a', target: 'b', relation: 'dependency', directed: true }
-      ]);
+      assert.isTrue(tree.hasDependency('a', 'b'));
     });
 
     it('should automatically create any missing vertices', function () {
       let tree = new Tree();
       tree.addDependency('a', 'b');
 
-      assert.deepEqual(tree.toObject().graph.nodes, [
-        { id: 'a' },
-        { id: 'b' }
-      ]);
+      assert.isTrue(tree.hasNode('a'));
+      assert.isTrue(tree.hasNode('b'));
     });
 
     context('with data', function () {
-      it('should add metadata', function () {
+      it('should store the value with the edge', function () {
         let tree = new Tree();
-        tree.addDependency('a', 'b', { label: 'AB' });
+        tree.addDependency('a', 'b', 'AB');
 
-        assert.deepEqual(tree.toObject().graph.edges, [
-          {
-            source: 'a',
-            target: 'b',
-            relation: 'dependency',
-            directed: true,
-            metadata: { label: 'AB' }
-          }
-        ]);
+        assert.strictEqual(tree.getDependency('a', 'b'), 'AB');
       });
     });
   });
