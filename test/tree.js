@@ -52,6 +52,43 @@ describe('Tree()', function () {
     });
   });
 
+  describe('#getNode(key)', function () {
+    let tree = new Tree();
+    tree.addNode('a', 'A');
+    tree.addNode('b');
+
+    it('should return the value stored with the specified node', function () {
+      assert.strictEqual(tree.getNode('a'), 'A');
+    });
+
+    it('should return undefined when the node does not have a value', function () {
+      assert.isUndefined(tree.getNode('b'));
+    });
+
+    it('should return undefined when the node does not exist', function () {
+      assert.isUndefined(tree.getNode('z'));
+    });
+  });
+
+  describe('#removeNode(key)', function () {
+    it('should remove the node from the graph', function () {
+      let tree = new Tree();
+      tree.addNode('a');
+      tree.removeNode('a');
+
+      assert.isFalse(tree.hasNode('a'));
+    });
+
+    it('should fail if there are still dependencies defined', function () {
+      let tree = new Tree();
+      tree.addDependency('a', 'b');
+
+      assert.throws(function () {
+        tree.removeNode('a');
+      });
+    });
+  });
+
   describe('#getSources()', function () {
     it('should return an empty list', function () {
       let tree = new Tree();
@@ -131,8 +168,61 @@ describe('Tree()', function () {
     });
   });
 
+  describe('#getDependency(parent, child)', function () {
+    let tree = new Tree();
+    tree.addDependency('a', 'b', 'AB');
+    tree.addDependency('a', 'c');
+
+    it('should return the value stored with the specified node', function () {
+      assert.strictEqual(tree.getDependency('a', 'b'), 'AB');
+    });
+
+    it('should return undefined when the node does not have a value', function () {
+      assert.isUndefined(tree.getDependency('a', 'c'));
+    });
+
+    it('should return undefined when the node does not exist', function () {
+      assert.isUndefined(tree.getDependency('a', 'z'));
+    });
+  });
+
+  describe('#removeDependency(parent, child)', function () {
+    it('should remove the edge from the graph', function () {
+      let tree = new Tree();
+      tree.addDependency('a', 'b');
+      tree.removeDependency('a', 'b');
+
+      assert.isFalse(tree.hasDependency('a', 'b'));
+    });
+
+    it('should not remove the nodes', function () {
+      let tree = new Tree();
+      tree.addDependency('a', 'b');
+      tree.removeDependency('a', 'b');
+
+      assert.isTrue(tree.hasNode('a'));
+      assert.isTrue(tree.hasNode('b'));
+    });
+  });
+
+  describe('#moveDependency(from, to, child)', function () {
+    it('should transfer the dependency from -> to', function () {
+      // a -> b -> c
+      let tree = new Tree();
+      tree.addDependency('a', 'b');
+      tree.addDependency('b', 'c');
+      tree.moveDependency('b', 'a', 'c');
+
+      // a -> b
+      //   -> c
+      assert.isTrue(tree.hasDependency('a', 'b'));
+      assert.isTrue(tree.hasDependency('a', 'c'));
+      assert.isFalse(tree.hasDependency('b', 'c'));
+    });
+  });
+
   describe('#dependenciesOf(node, [recursive])', function () {
-    // a > b > c > d
+    // a -> b -> c -> d
     let tree = new Tree();
     tree.addNode('a');
     tree.addNode('b');
@@ -154,7 +244,7 @@ describe('Tree()', function () {
   });
 
   describe('#dependantsOf(node, [recursive])', function () {
-    // a > b > c > d
+    // a -> b -> c -> d
     let tree = new Tree();
     tree.addNode('a');
     tree.addNode('b');
