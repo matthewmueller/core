@@ -188,20 +188,45 @@ describe('Tree()', function () {
 
   describe('#removeDependency(parent, child)', function () {
     it('should remove the edge from the graph', function () {
+      // a -> b
       let tree = new Tree();
       tree.addDependency('a', 'b');
+
+      // a
       tree.removeDependency('a', 'b');
 
       assert.isFalse(tree.hasDependency('a', 'b'));
     });
 
-    it('should not remove the nodes', function () {
+    it('should remove the unused nodes', function () {
+      // a -> b
+      //   -> c
       let tree = new Tree();
       tree.addDependency('a', 'b');
-      tree.removeDependency('a', 'b');
+      tree.addDependency('a', 'c');
+
+      // a -> b
+      tree.removeDependency('a', 'c');
 
       assert.isTrue(tree.hasNode('a'));
       assert.isTrue(tree.hasNode('b'));
+      assert.isFalse(tree.hasNode('c'));
+    });
+
+    it('should not remove nodes that are still depended upon', function () {
+      // a -> c
+      // b ->
+      let tree = new Tree();
+      tree.addDependency('a', 'c');
+      tree.addDependency('b', 'c');
+
+      // a -> c
+      // b
+      tree.removeDependency('b', 'c');
+
+      assert.isTrue(tree.hasNode('a'));
+      assert.isTrue(tree.hasNode('b'));
+      assert.isTrue(tree.hasNode('c'));
     });
   });
 
