@@ -1,8 +1,16 @@
+sudo: false
 language: node_js
 node_js:
-  - stable
+- stable
 install: npm update
 cache:
   directories:
-    - node_modules
-sudo: false
+  - node_modules
+deploy:
+  provider: npm
+  email: dominic@dbarnes.info
+  api_key:
+    secure: UKksUMezSum+5D5lPQcp10/N2bIjo04lUteB9cRqMAzyiOSRDb2cvN6F/2mUqiSolPtyQCOGyTT/UskzyXEYzT2jB9y7V74eBXl/51aprOenqbrSoLbM25Bfynv6QqoDOgpTzjZqt8tJ5hBl3rurn8uxSK1HAXIBmTWiYASaH7RMM3CFePR1cyVeHVvnp5Gj7gdxk+M0b6jMzDspeOD5fmYM4mda6D+4rfv/EdU4uTyWS7u8ldDMewpRFh8TZeSfh3yNveogiGNjh5sHlghzBsy1ufRwESPSIIDjSQQenRdJBGoKTq/9OQR6XZezxsh4Y6usOWrAUUILujsam5K8/MXjchWaXoZoMMYpjRpyJ4oD2i5I6TA2EIGHTPhnxFq/+2PWf5n2h3/cTTtOyYYMiRUUqsqXQxdZrwY8Y+tEM2LV6cfgUsBjOdjneqAMrvIu1ls7x3T+Fhe3iH+Y5lNsW0ZwCF70Tqm38b3eT5cTkqjJbeNZyS+Lw3IZjuBXIWmsjHEeDha3kfYrVNWtiEbDRu8JzP9TMo3ib0KXyN5Ta4G8c1xD2mtzBYg+9TDRnZgo5+mZZ5uDN4r9C469raqVTZ5SKAd+/i60ZsALThtpi+agfWBu0sb4wGYyH5WSTthOGTS7tkMsPTlNngRq7gu+4jHByEiWEheVqmUQH32VIQk=
+  on:
+    tags: true
+    repo: makojs/core
