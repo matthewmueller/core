@@ -3,8 +3,7 @@
 
 let chai = require('chai');
 let Builder = require('../lib/builder');
-let File = require('../lib/file');
-let Tree = require('../lib/tree');
+let Tree = require('mako-tree');
 let path = require('path');
 
 chai.use(require('chai-as-promised'));
@@ -173,7 +172,6 @@ describe('Builder()', function () {
         let entry = fixture('text/a.txt');
 
         mako[hook]('txt', function (file) {
-          assert.instanceOf(file, File);
           assert.equal(file.path, entry);
         });
 
@@ -332,7 +330,6 @@ describe('Builder()', function () {
         let entry = fixture('text/a.txt');
 
         mako[hook]('txt', function (file) {
-          assert.instanceOf(file, File);
           assert.equal(file.path, entry);
         });
 
