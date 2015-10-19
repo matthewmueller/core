@@ -197,6 +197,16 @@ describe('Builder()', function () {
 
         return mako.analyze(fixture('text/a.txt'));
       });
+
+      it('should support multiple extensions', function () {
+        let mako = new Builder();
+
+        mako[hook]([ 'txt', 'md' ], function () {
+          assert.isTrue(mako.hooks.has(hook, 'txt'));
+        });
+
+        return mako.analyze(fixture('text/a.txt'));
+      });
     });
   });
 
