@@ -1,4 +1,9 @@
 
+0.0.4 / 2015-10-22
+==================
+
+  * spending more time in the build phase, adding pre/post dependencies hooks, updating docs
+
 0.0.3 / 2015-10-19
 ==================
 
