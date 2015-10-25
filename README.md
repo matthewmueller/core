@@ -15,17 +15,17 @@ This build tool aims to be a generic interface for working with all sorts of bui
 
 By itself, mako does very little, and relies on composing a lot of focused plugins. (inspired by [metalsmith](http://www.metalsmith.io/)) It goes through 2 distinct phases: "analyze" and "build". Along the way, plugins can use the exposed hooks for a given file extension.
 
-Examples of "read phase" plugins include:
+Examples of "analyze" plugins include:
 
  - Checking for a file's existence via `fs.stat()`
  - Reading a file from disk, either as a string or buffer
- - Resolving CommonJS `require` statements for JS files
+ - Resolving CommonJS `require` statements in JS files
  - Resolving `@import` and `url(...)` links in CSS files
  - Resolving scripts, stylesheets and images in HTML files
 
-During the read phase, plugins are free to define dependencies on the tree, and mako will continue to traverse through those added dependencies until it reaches the end.
+During analysis, plugins are free to define dependencies on the tree, and mako will continue to traverse those new dependencies automatically.
 
-Examples of "write phase" plugins include:
+Examples of "build" plugins include:
 
  - Inlining any `@import`-ed CSS
  - Copying/linking images/fonts/etc linked to in CSS files
@@ -33,8 +33,6 @@ Examples of "write phase" plugins include:
  - Minifying/compressing a file before write
  - Writing a file to disk
  - Uploading a file to S3
-
-As mentioned before, this is not ready for production use, and should largely be considered an experiment for the time-being.
 
 ## Usage
 
@@ -74,9 +72,9 @@ Returns a `Promise` that resolves with the generated `tree` of whatever entry fi
 
 Each of the 9 hooks has it's own dedicated method for adding `handler` functions.
 
-### builder.extensions(entry, ...dependencies)
+### builder.extensions(category, ...extensions)
 
-This internal mechanism is a way to associate different file extensions with one another so they can be resolved in mixed environments. (eg: associating "js" files with "coffee")
+This internal mechanism is a way for plugins to share a common `category` of file `extensions`. This shared list can be used to customize related file extensions. (eg: adding `.coffee` and `.ts` alongside `.js`)
 
 ## Hooks
 
