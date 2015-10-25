@@ -1,4 +1,10 @@
 
+0.1.0 / 2015-10-25
+==================
+
+  * bump mako-tree
+  * no longer throwing errors for unrecognized file types
+
 0.0.4 / 2015-10-22
 ==================
 
