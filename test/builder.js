@@ -15,10 +15,10 @@ describe('Builder()', function () {
     assert.instanceOf(new Builder(), Builder);
   });
 
-  describe('#extensions(type, [list])', function () {
-    it('should require type', function () {
+  describe('#extensions(category, [list])', function () {
+    it('should require category', function () {
       let mako = new Builder();
-      assert.throws(() => mako.extensions(), /^a file type is required$/);
+      assert.throws(() => mako.extensions(), /^a category name is required$/);
     });
 
     it('should return an empty list by default', function () {
@@ -428,110 +428,100 @@ describe('Builder()', function () {
       assert.eventually.instanceOf(mako.analyze(entry), Tree);
     });
 
-    context('with an unconfigured entry file type', function () {
-      it('should throw an error', function () {
-        let mako = new Builder();
-        // no plugins
-        return assert.isRejected(mako.analyze(fixture('text/a.txt')), /^Error: unsupported file type 'txt'/);
+    it('should call the read/dependency hooks in order', function () {
+      let called = [];
+      let mako = new Builder();
+
+      mako.preread('txt', function () {
+        called.push('preread');
+      });
+
+      mako.read('txt', function () {
+        called.push('read');
+      });
+
+      mako.postread('txt', function () {
+        called.push('postread');
+      });
+
+      mako.dependencies('txt', function () {
+        called.push('dependencies');
+      });
+
+      return mako.analyze(fixture('text/a.txt')).then(function () {
+        assert.deepEqual(called, [ 'preread', 'read', 'postread', 'dependencies' ]);
       });
     });
 
-    context('with configured entry file type', function () {
-      it('should call the read/dependency hooks in order', function () {
-        let called = [];
-        let mako = new Builder();
+    it('should share the arguments between the read/dependency hooks', function () {
+      let mako = new Builder();
+      let args;
 
-        mako.preread('txt', function () {
-          called.push('preread');
-        });
-
-        mako.read('txt', function () {
-          called.push('read');
-        });
-
-        mako.postread('txt', function () {
-          called.push('postread');
-        });
-
-        mako.dependencies('txt', function () {
-          called.push('dependencies');
-        });
-
-        return mako.analyze(fixture('text/a.txt')).then(function () {
-          assert.deepEqual(called, [ 'preread', 'read', 'postread', 'dependencies' ]);
-        });
+      mako.preread('txt', function (file, tree, builder) {
+        args = [ file, tree, builder ];
       });
 
-      it('should share the arguments between the read/dependency hooks', function () {
-        let mako = new Builder();
-        let args;
-
-        mako.preread('txt', function (file, tree, builder) {
-          args = [ file, tree, builder ];
-        });
-
-        mako.read('txt', function (file, tree, builder) {
-          assert.strictEqual(file, args[0]);
-          assert.strictEqual(tree, args[1]);
-          assert.strictEqual(builder, args[2]);
-        });
-
-        mako.postread('txt', function (file, tree, builder) {
-          assert.strictEqual(file, args[0]);
-          assert.strictEqual(tree, args[1]);
-          assert.strictEqual(builder, args[2]);
-        });
-
-        mako.dependencies('txt', function (file, tree, builder) {
-          assert.strictEqual(file, args[0]);
-          assert.strictEqual(tree, args[1]);
-          assert.strictEqual(builder, args[2]);
-        });
-
-        return mako.analyze(fixture('text/a.txt'));
+      mako.read('txt', function (file, tree, builder) {
+        assert.strictEqual(file, args[0]);
+        assert.strictEqual(tree, args[1]);
+        assert.strictEqual(builder, args[2]);
       });
 
-      it('should recurse into any dependencies added during the dependencies hook', function () {
-        let mako = new Builder();
-        let entry = fixture('text/a.txt');
-        let dep = fixture('text/b.txt');
-        let processed = [];
-
-        mako.read('txt', function (file) {
-          processed.push(file.path);
-        });
-
-        mako.dependencies('txt', function (file, tree) {
-          if (file.path === entry) tree.addDependency(entry, dep);
-        });
-
-        return mako.analyze(entry).then(function () {
-          assert.deepEqual(processed, [ entry, dep ]);
-        });
+      mako.postread('txt', function (file, tree, builder) {
+        assert.strictEqual(file, args[0]);
+        assert.strictEqual(tree, args[1]);
+        assert.strictEqual(builder, args[2]);
       });
 
-      it('should handle circular dependencies', function () {
-        // circular: a -> b -> c -> b
-        let mako = new Builder();
-        let entry = fixture('text/a.txt');
-        let dep1 = fixture('text/b.txt');
-        let dep2 = fixture('text/c.txt');
-        let processed = [];
+      mako.dependencies('txt', function (file, tree, builder) {
+        assert.strictEqual(file, args[0]);
+        assert.strictEqual(tree, args[1]);
+        assert.strictEqual(builder, args[2]);
+      });
 
-        mako.dependencies('txt', function (file, tree) {
-          processed.push(file.path);
-          if (file.path === entry) {
-            tree.addDependency(entry, dep1);
-          } else if (file.path === dep1) {
-            tree.addDependency(dep1, dep2);
-          } else if (file.path === dep2) {
-            tree.addDependency(dep2, dep1);
-          }
-        });
+      return mako.analyze(fixture('text/a.txt'));
+    });
 
-        return mako.analyze(entry).then(function () {
-          assert.deepEqual(processed, [ entry, dep1, dep2 ]);
-        });
+    it('should recurse into any dependencies added during the dependencies hook', function () {
+      let mako = new Builder();
+      let entry = fixture('text/a.txt');
+      let dep = fixture('text/b.txt');
+      let processed = [];
+
+      mako.read('txt', function (file) {
+        processed.push(file.path);
+      });
+
+      mako.dependencies('txt', function (file, tree) {
+        if (file.path === entry) tree.addDependency(entry, dep);
+      });
+
+      return mako.analyze(entry).then(function () {
+        assert.deepEqual(processed, [ entry, dep ]);
+      });
+    });
+
+    it('should handle circular dependencies', function () {
+      // circular: a -> b -> c -> b
+      let mako = new Builder();
+      let entry = fixture('text/a.txt');
+      let dep1 = fixture('text/b.txt');
+      let dep2 = fixture('text/c.txt');
+      let processed = [];
+
+      mako.dependencies('txt', function (file, tree) {
+        processed.push(file.path);
+        if (file.path === entry) {
+          tree.addDependency(entry, dep1);
+        } else if (file.path === dep1) {
+          tree.addDependency(dep1, dep2);
+        } else if (file.path === dep2) {
+          tree.addDependency(dep2, dep1);
+        }
+      });
+
+      return mako.analyze(entry).then(function () {
+        assert.deepEqual(processed, [ entry, dep1, dep2 ]);
       });
     });
   });
@@ -554,145 +544,135 @@ describe('Builder()', function () {
       assert.eventually.instanceOf(mako.build(entry), Tree);
     });
 
-    context('with an unconfigured entry file type', function () {
-      it('should throw an error', function () {
-        let mako = new Builder();
-        // no plugins
-        return assert.isRejected(mako.build(fixture('text/a.txt')), /^Error: unsupported file type 'txt'/);
+    it('should call postdependencies in sequential order (not in parallel)', function () {
+      // a -> b -> c
+      let mako = new Builder();
+      let entry = fixture('text/a.txt');
+      let dep1 = fixture('text/b.txt');
+      let dep2 = fixture('text/c.txt');
+      let processed = [];
+
+      mako.dependencies('txt', function (file) {
+        if (file.path === entry) {
+          file.addDependency(dep1);
+        } else if (file.path === dep1) {
+          file.addDependency(dep2);
+        }
+      });
+
+      mako.postdependencies('txt', function (file, tree, builder, done) {
+        // each one is staggered differently to test race conditions. if
+        // these were kicked off in parallel (what we don't want) then
+        // the order would be incorrect.
+        if (file.path === entry) {
+          setTimeout(finish, 1);
+        } else if (file.path === dep1) {
+          setTimeout(finish, 10);
+        } else {
+          setTimeout(finish, 25);
+        }
+
+        function finish() {
+          processed.push(file.path);
+          done();
+        }
+      });
+
+      return mako.build(entry).then(function () {
+        assert.deepEqual(processed, [ dep2, dep1, entry ]);
       });
     });
 
-    context('with configured entry file type', function () {
-      it('should call postdependencies in sequential order (not in parallel)', function () {
-        // a -> b -> c
-        let mako = new Builder();
-        let entry = fixture('text/a.txt');
-        let dep1 = fixture('text/b.txt');
-        let dep2 = fixture('text/c.txt');
-        let processed = [];
+    it('should call the write hooks in order', function () {
+      let called = [];
+      let mako = new Builder();
 
-        mako.dependencies('txt', function (file) {
-          if (file.path === entry) {
-            file.addDependency(dep1);
-          } else if (file.path === dep1) {
-            file.addDependency(dep2);
-          }
-        });
-
-        mako.postdependencies('txt', function (file, tree, builder, done) {
-          // each one is staggered differently to test race conditions. if
-          // these were kicked off in parallel (what we don't want) then
-          // the order would be incorrect.
-          if (file.path === entry) {
-            setTimeout(finish, 1);
-          } else if (file.path === dep1) {
-            setTimeout(finish, 10);
-          } else {
-            setTimeout(finish, 25);
-          }
-
-          function finish() {
-            processed.push(file.path);
-            done();
-          }
-        });
-
-        return mako.build(entry).then(function () {
-          assert.deepEqual(processed, [ dep2, dep1, entry ]);
-        });
+      mako.prewrite('txt', function () {
+        called.push('prewrite');
       });
 
-      it('should call the write hooks in order', function () {
-        let called = [];
-        let mako = new Builder();
-
-        mako.prewrite('txt', function () {
-          called.push('prewrite');
-        });
-
-        mako.write('txt', function () {
-          called.push('write');
-        });
-
-        mako.postwrite('txt', function () {
-          called.push('postwrite');
-        });
-
-        return mako.build(fixture('text/a.txt')).then(function () {
-          assert.deepEqual(called, [ 'prewrite', 'write', 'postwrite' ]);
-        });
+      mako.write('txt', function () {
+        called.push('write');
       });
 
-      it('should share the arguments between the write hooks', function () {
-        let mako = new Builder();
-        let args;
-
-        mako.prewrite('txt', function (file, tree, builder) {
-          args = [ file, tree, builder ];
-        });
-
-        mako.write('txt', function (file, tree, builder) {
-          assert.strictEqual(file, args[0]);
-          assert.strictEqual(tree, args[1]);
-          assert.strictEqual(builder, args[2]);
-        });
-
-        mako.postwrite('txt', function (file, tree, builder) {
-          assert.strictEqual(file, args[0]);
-          assert.strictEqual(tree, args[1]);
-          assert.strictEqual(builder, args[2]);
-        });
-
-        return mako.build(fixture('text/a.txt'));
+      mako.postwrite('txt', function () {
+        called.push('postwrite');
       });
 
-      it('should call hooks for all defined dependencies', function () {
-        // a -> b -> c -> b* (circular)
-        let mako = new Builder();
-        let entry = fixture('text/a.txt');
-        let dep1 = fixture('text/b.txt');
-        let dep2 = fixture('text/c.txt');
-        let processed = [];
+      return mako.build(fixture('text/a.txt')).then(function () {
+        assert.deepEqual(called, [ 'prewrite', 'write', 'postwrite' ]);
+      });
+    });
 
-        mako.dependencies('txt', function (file) {
-          processed.push(file.path);
-          if (file.path === entry) {
-            file.addDependency(dep1);
-          } else if (file.path === dep1) {
-            file.addDependency(dep2);
-          } else if (file.path === dep2) {
-            file.addDependency(dep1); // circular
-          }
-        });
+    it('should share the arguments between the write hooks', function () {
+      let mako = new Builder();
+      let args;
 
-        return mako.analyze(entry).then(function () {
-          assert.deepEqual(processed, [ entry, dep1, dep2 ]);
-        });
+      mako.prewrite('txt', function (file, tree, builder) {
+        args = [ file, tree, builder ];
       });
 
-      it('should call build hooks on dependencies first (bottom-up)', function () {
-        // a -> b -> c
-        let mako = new Builder();
-        let entry = fixture('text/a.txt');
-        let dep1 = fixture('text/b.txt');
-        let dep2 = fixture('text/c.txt');
-        let processed = [];
+      mako.write('txt', function (file, tree, builder) {
+        assert.strictEqual(file, args[0]);
+        assert.strictEqual(tree, args[1]);
+        assert.strictEqual(builder, args[2]);
+      });
 
-        mako.dependencies('txt', function (file) {
-          if (file.path === entry) {
-            file.addDependency(dep1);
-          } else if (file.path === dep1) {
-            file.addDependency(dep2);
-          }
-        });
+      mako.postwrite('txt', function (file, tree, builder) {
+        assert.strictEqual(file, args[0]);
+        assert.strictEqual(tree, args[1]);
+        assert.strictEqual(builder, args[2]);
+      });
 
-        mako.write('txt', function (file) {
-          processed.push(file.path);
-        });
+      return mako.build(fixture('text/a.txt'));
+    });
 
-        return mako.build(entry).then(function () {
-          assert.deepEqual(processed, [ dep2, dep1, entry ]);
-        });
+    it('should call hooks for all defined dependencies', function () {
+      // a -> b -> c -> b* (circular)
+      let mako = new Builder();
+      let entry = fixture('text/a.txt');
+      let dep1 = fixture('text/b.txt');
+      let dep2 = fixture('text/c.txt');
+      let processed = [];
+
+      mako.dependencies('txt', function (file) {
+        processed.push(file.path);
+        if (file.path === entry) {
+          file.addDependency(dep1);
+        } else if (file.path === dep1) {
+          file.addDependency(dep2);
+        } else if (file.path === dep2) {
+          file.addDependency(dep1); // circular
+        }
+      });
+
+      return mako.analyze(entry).then(function () {
+        assert.deepEqual(processed, [ entry, dep1, dep2 ]);
+      });
+    });
+
+    it('should call build hooks on dependencies first (bottom-up)', function () {
+      // a -> b -> c
+      let mako = new Builder();
+      let entry = fixture('text/a.txt');
+      let dep1 = fixture('text/b.txt');
+      let dep2 = fixture('text/c.txt');
+      let processed = [];
+
+      mako.dependencies('txt', function (file) {
+        if (file.path === entry) {
+          file.addDependency(dep1);
+        } else if (file.path === dep1) {
+          file.addDependency(dep2);
+        }
+      });
+
+      mako.write('txt', function (file) {
+        processed.push(file.path);
+      });
+
+      return mako.build(entry).then(function () {
+        assert.deepEqual(processed, [ dep2, dep1, entry ]);
       });
     });
   });
