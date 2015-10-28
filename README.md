@@ -72,10 +72,6 @@ Returns a `Promise` that resolves with the generated `tree` of whatever entry fi
 
 Each of the 9 hooks has it's own dedicated method for adding `handler` functions.
 
-### builder.extensions(category, ...extensions)
-
-This internal mechanism is a way for plugins to share a common `category` of file `extensions`. This shared list can be used to customize related file extensions. (eg: adding `.coffee` and `.ts` alongside `.js`)
-
 ## Hooks
 
 Hooks are the primary mechanism that plugin authors will use. There are 3 main types of hooks, each with a `pre` and `post` variant, bringing the grand total to 9. It may seem like a lot, but each does have a distinct purpose that should make choosing the right one pretty straightforward:

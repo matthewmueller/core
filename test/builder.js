@@ -15,33 +15,6 @@ describe('Builder()', function () {
     assert.instanceOf(new Builder(), Builder);
   });
 
-  describe('#extensions(category, [list])', function () {
-    it('should require category', function () {
-      let mako = new Builder();
-      assert.throws(() => mako.extensions(), /^a category name is required$/);
-    });
-
-    it('should return an empty list by default', function () {
-      let mako = new Builder();
-      assert.deepEqual(mako.extensions('js'), []);
-    });
-
-    context('with list', function () {
-      it('should add to the internal list', function () {
-        let mako = new Builder();
-        mako.extensions('js', [ 'js', 'json' ]);
-        assert.deepEqual(mako.extensions('js'), [ 'js', 'json' ]);
-      });
-
-      it('should not clobber previous values', function () {
-        let mako = new Builder();
-        mako.extensions('js', [ 'js', 'json' ]);
-        mako.extensions('js', [ 'es6' ]);
-        assert.deepEqual(mako.extensions('js'), [ 'js', 'json', 'es6' ]);
-      });
-    });
-  });
-
   // read hooks
   [ 'preread', 'read', 'postread', 'predependencies', 'dependencies' ].forEach(function (hook) {
     describe(`#${hook}(type, handler)`, function () {
