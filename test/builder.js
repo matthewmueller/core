@@ -497,6 +497,100 @@ describe('Builder()', function () {
         assert.deepEqual(processed, [ entry, dep1, dep2 ]);
       });
     });
+
+    context('in parallel', function () {
+      [ 'preread', 'read', 'postread', 'predependencies', 'dependencies' ].forEach(function (hook) {
+        context(hook, function () {
+          it('should share the tree between all runs', function () {
+            let mako = new Builder();
+            let entry = fixture('text/a.txt');
+            let processed = [];
+
+            mako[hook]('txt', function (file) {
+              processed.push(file.path);
+            });
+
+            return Promise.all([
+              mako.analyze(entry),
+              mako.analyze(entry)
+            ]).then(function (results) {
+              assert.strictEqual(results[0], results[1]);
+            });
+          });
+
+          it(`should not call the ${hook} hook multiple times`, function () {
+            let mako = new Builder();
+            let entry = fixture('text/a.txt');
+            let processed = [];
+
+            mako[hook]('txt', function (file) {
+              processed.push(file.path);
+            });
+
+            return Promise.all([
+              mako.analyze(entry),
+              mako.analyze(entry)
+            ]).then(function () {
+              assert.deepEqual(processed, [ entry ]);
+            });
+          });
+        });
+      });
+    });
+
+    context('in serial', function () {
+      context('preread', function () {
+        it('should always call the preread hook', function () {
+          let mako = new Builder();
+          let entry = fixture('text/a.txt');
+          let processed = [];
+
+          mako.preread('txt', function (file) {
+            processed.push(file.path);
+          });
+
+          return mako.analyze(entry)
+            .then(() => mako.analyze(entry))
+            .then(() => assert.deepEqual(processed, [ entry, entry ]));
+        });
+      });
+
+      [ 'read', 'postread', 'predependencies', 'dependencies' ].forEach(function (hook) {
+        context(hook, function () {
+          it(`should not call the ${hook} hook each time`, function () {
+            let mako = new Builder();
+            let entry = fixture('text/a.txt');
+            let processed = [];
+
+            mako[hook]('txt', function (file) {
+              processed.push(file.path);
+            });
+
+            return mako.analyze(entry)
+              .then(() => mako.analyze(entry))
+              .then(() => assert.deepEqual(processed, [ entry ]));
+          });
+
+          it(`should call the ${hook} hook if the preread hook marks file as dirty`, function () {
+            let mako = new Builder();
+            let entry = fixture('text/a.txt');
+            let processed = [];
+
+            mako.preread('txt', function (file) {
+              file.analyzed = false;
+            });
+
+            mako[hook]('txt', function (file) {
+              processed.push(file.path);
+            });
+
+            return mako.analyze(entry)
+              .then(() => mako.analyze(entry))
+              .then(() => assert.deepEqual(processed, [ entry, entry ]));
+          });
+        });
+      });
+    });
   });
 
   describe('#build(...entries)', function () {
