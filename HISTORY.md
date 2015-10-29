@@ -1,4 +1,12 @@
 
+0.2.0 / 2015-10-29
+==================
+
+  * updating tree, adding better parallelization
+  * making hook setters chainable
+  * allow running repeated analyze calls, in either parallel or serial
+  * removing internal extensions management
+
 0.1.0 / 2015-10-25
 ==================
 
