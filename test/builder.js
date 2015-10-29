@@ -501,23 +501,6 @@ describe('Builder()', function () {
     context('in parallel', function () {
       [ 'preread', 'read', 'postread', 'predependencies', 'dependencies' ].forEach(function (hook) {
         context(hook, function () {
-          it('should share the tree between all runs', function () {
-            let mako = new Builder();
-            let entry = fixture('text/a.txt');
-            let processed = [];
-
-            mako[hook]('txt', function (file) {
-              processed.push(file.path);
-            });
-
-            return Promise.all([
-              mako.analyze(entry),
-              mako.analyze(entry)
-            ]).then(function (results) {
-              assert.strictEqual(results[0], results[1]);
-            });
-          });
-
           it(`should not call the ${hook} hook multiple times`, function () {
             let mako = new Builder();
             let entry = fixture('text/a.txt');
