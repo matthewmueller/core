@@ -3,6 +3,8 @@
 > A pluggable builder focused on assembling 1 file from many dependent files.
 
 [![npm version](https://img.shields.io/npm/v/mako.svg)](https://www.npmjs.com/package/mako)
+[![npm dependencies](https://img.shields.io/david/makojs/core.svg)](https://david-dm.org/makojs/core)
+[![npm dev dependencies](https://img.shields.io/david/dev/makojs/core.svg)](https://david-dm.org/makojs/core#info=devDependencies)
 [![build status](https://img.shields.io/travis/makojs/core.svg)](https://travis-ci.org/makojs/core)
 
 **NOTE:** this entire system is under heavy development, it is not ready for production use right now.
