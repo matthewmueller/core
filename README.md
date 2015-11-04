@@ -13,6 +13,8 @@ At it's core, mako is a build framework. On it's own, it is merely a conductor, 
 plugins to configure what and how it builds. As a user, you can either assemble plugins together
 yourself, or simply use a bundled collection that is tailored to your use-case.
 
+Check out the [the wiki](http://github.com/makojs/core/wiki) for resources on getting started.
+
 ## How does it work?
 
 The main flow for a mako build goes through 2 distinct phases: **analyze** and **build**.
@@ -37,7 +39,8 @@ resources about plugins.
 
 ## Usage
 
-Currently, the only way to interact with mako is via the JS API. (with a CLI on it's way)
+The easiest way to get up and running with mako is to use the [CLI](https://github.com/makojs/cli).
+For advanced users, the JS API is also available:
 
 ```js
 var mako = require('mako');
