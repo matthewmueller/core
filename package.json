@@ -2,6 +2,13 @@
   "name": "mako",
   "version": "0.2.0",
   "description": "A pluggable general-purpose build tool",
+  "keywords": [
+    "generic",
+    "pluggable",
+    "build",
+    "runner",
+    "tool"
+  ],
   "repository": "makojs/core",
   "license": "MIT",
   "dependencies": {
