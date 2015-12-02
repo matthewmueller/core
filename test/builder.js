@@ -426,6 +426,31 @@ describe('Builder()', function () {
       });
     });
 
+    it('should use the original type for the preread hook', function () {
+      let called = [];
+      let mako = new Builder();
+      let entry = fixture('jade/index.jade');
+
+      mako.preread('jade', function () {
+        called.push('preread');
+      });
+
+      mako.postread('jade', function (file) {
+        called.push('postread');
+        file.type = 'html'; // mock transpile
+      });
+
+      mako.dependencies('html', function () {
+        called.push('dependencies');
+      });
+
+      return mako.analyze(entry).then(function () {
+        return mako.analyze(entry).then(function () {
+          assert.deepEqual(called, [ 'preread', 'postread', 'dependencies', 'preread' ]);
+        });
+      });
+    });
+
     it('should share the arguments between the read/dependency hooks', function () {
       let mako = new Builder();
       let args;
