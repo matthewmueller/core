@@ -1,4 +1,9 @@
 
+0.3.1 / 2015-12-01
+==================
+
+  * handling transpiled files with changing types more elegantly
+
 0.3.0 / 2015-12-01
 ==================
 
