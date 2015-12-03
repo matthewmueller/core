@@ -1,4 +1,9 @@
 
+0.3.2 / 2015-12-03
+==================
+
+  * resetting the analyzing flag when an error is thrown by a hook
+
 0.3.1 / 2015-12-01
 ==================
 
