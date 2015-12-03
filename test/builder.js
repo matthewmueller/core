@@ -180,6 +180,20 @@ describe('Builder()', function () {
 
         return mako.analyze(fixture('text/a.txt'));
       });
+
+      it('should not leave the analyzing flag on when an error is thrown (#7)', function () {
+        let mako = new Builder();
+        let entry = fixture('text/a.txt');
+        let tree = mako.tree;
+
+        mako[hook]('txt', function () {
+          throw new Error('fail');
+        });
+
+        return mako.analyze(entry).catch(function () {
+          assert.isFalse(tree.getFile(entry).analyzing);
+        });
+      });
     });
   });
 
