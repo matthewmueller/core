@@ -1,4 +1,10 @@
 
+0.4.0 / 2015-12-07
+==================
+
+  * analyze: process deeply-nested deps that are marked dirty
+  * deps: updating mako-tree
+
 0.3.2 / 2015-12-03
 ==================
 
