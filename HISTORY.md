@@ -1,4 +1,9 @@
 
+0.4.1 / 2015-12-13
+==================
+
+  * adding comments and cleaning up debug output
+
 0.4.0 / 2015-12-07
 ==================
 
