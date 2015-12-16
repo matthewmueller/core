@@ -562,6 +562,31 @@ describe('Builder()', function () {
         .then(() => assert.deepEqual(processed, [ a, b, c, c ]));
     });
 
+    it('should always preread files during different builds', function () {
+      let mako = new Builder();
+      let a = fixture('text/a.txt');
+      let b = fixture('text/b.txt');
+      let c = fixture('text/c.txt');
+      let processed = [];
+
+      mako.preread('txt', function (file) {
+        if (file.analyzed && file.path === c) file.dirty();
+        processed.push(file.path);
+      });
+
+      mako.dependencies('txt', function (file) {
+        if (file.path === a) {
+          file.addDependency(b);
+        } else if (file.path === b) {
+          file.addDependency(c);
+        }
+      });
+
+      return mako.analyze(a)
+        .then(() => mako.analyze(a))
+        .then(() => assert.deepEqual(processed, [ a, b, c, a, b, c ]));
+    });
+
     context('in parallel', function () {
       [ 'preread', 'read', 'postread', 'predependencies', 'dependencies' ].forEach(function (hook) {
         context(hook, function () {
