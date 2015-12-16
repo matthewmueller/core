@@ -1,4 +1,9 @@
 
+0.4.3 / 2015-12-15
+==================
+
+  * always allowing the preread check to happen, so modifying files between builds will trigger rebuilds
+
 0.4.2 / 2015-12-14
 ==================
 
