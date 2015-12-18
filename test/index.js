@@ -2,7 +2,7 @@
 'use strict';
 
 let assert = require('chai').assert;
-let Builder = require('../lib/builder');
+let Builder = require('../lib/mako');
 let mako = require('..');
 
 describe('mako', function () {
