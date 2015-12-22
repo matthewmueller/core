@@ -2,7 +2,7 @@
 'use strict';
 
 let chai = require('chai');
-let Builder = require('../lib/builder');
+let Builder = require('../lib/mako');
 let Tree = require('mako-tree');
 let path = require('path');
 
@@ -161,7 +161,7 @@ describe('Builder()', function () {
         return mako.analyze(fixture('text/a.txt'));
       });
 
-      it('should receive the builder as an argument', function () {
+      it('should receive the builder instance as an argument', function () {
         let mako = new Builder();
 
         mako[hook]('txt', function (file, tree, builder) {
@@ -343,7 +343,7 @@ describe('Builder()', function () {
         return mako.build(fixture('text/a.txt'));
       });
 
-      it('should receive the builder as an argument', function () {
+      it('should receive the builder instance as an argument', function () {
         let mako = new Builder();
 
         mako[hook]('txt', function (file, tree, builder) {
@@ -587,6 +587,50 @@ describe('Builder()', function () {
         .then(() => assert.deepEqual(processed, [ a, b, c, a, b, c ]));
     });
 
+    describe('events', function () {
+      it(`should emit an analyze event for each file`, function () {
+        let mako = new Builder();
+        let a = fixture('text/a.txt');
+        let b = fixture('text/b.txt');
+        let c = fixture('text/c.txt');
+        let processed = [];
+
+        mako.dependencies('txt', function (file) {
+          if (file.path === a) {
+            file.addDependency(b);
+          } else if (file.path === b) {
+            file.addDependency(c);
+          }
+        });
+
+        return mako
+          .on('analyze', file => processed.push(file.path))
+          .analyze(a)
+          .then(() => assert.deepEqual(processed, [ a, b, c ]));
+      });
+
+      it(`should emit an analyze event for each file`, function () {
+        let mako = new Builder();
+        let a = fixture('text/a.txt');
+        let b = fixture('text/b.txt');
+        let c = fixture('text/c.txt');
+        let processed = [];
+
+        mako.dependencies('txt', function (file) {
+          if (file.path === a) {
+            file.addDependency(b);
+          } else if (file.path === b) {
+            file.addDependency(c);
+          }
+        });
+
+        return mako
+          .on('analyzed', file => processed.push(file.path))
+          .analyze(a)
+          .then(() => assert.deepEqual(processed, [ c, b, a ]));
+      });
+    });
+
     context('in parallel', function () {
       [ 'preread', 'read', 'postread', 'predependencies', 'dependencies' ].forEach(function (hook) {
         context(hook, function () {
@@ -812,6 +856,52 @@ describe('Builder()', function () {
 
       return mako.build(entry).then(function () {
         assert.deepEqual(processed, [ dep2, dep1, entry ]);
+      });
+    });
+
+    describe('events', function () {
+      it('should emit a build event for each entry file', function () {
+        let mako = new Builder();
+        let a = fixture('text/a.txt');
+        let b = fixture('text/b.txt');
+        let c = fixture('text/c.txt');
+        let processed = [];
+
+        mako.dependencies('txt', function (file) {
+          if (file.path === a) {
+            file.addDependency(b);
+          } else if (file.path === b) {
+            file.addDependency(c);
+          }
+        });
+
+        return mako
+          .on('build', file => processed.push(file.path))
+          .build(a)
+          .then(() => assert.deepEqual(processed, [ a ]));
+      });
+
+      [ 'write', 'written' ].forEach(function (event) {
+        it(`should emit a ${event} event for each file`, function () {
+          let mako = new Builder();
+          let a = fixture('text/a.txt');
+          let b = fixture('text/b.txt');
+          let c = fixture('text/c.txt');
+          let processed = [];
+
+          mako.dependencies('txt', function (file) {
+            if (file.path === a) {
+              file.addDependency(b);
+            } else if (file.path === b) {
+              file.addDependency(c);
+            }
+          });
+
+          return mako
+            .on(event, file => processed.push(file.path))
+            .build(a)
+            .then(() => assert.deepEqual(processed, [ c, b, a ]));
+        });
       });
     });
   });
