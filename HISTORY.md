@@ -1,4 +1,9 @@
 
+0.5.0 / 2015-12-22
+==================
+
+  * emitting events on the core builder to allow logging
+
 0.4.3 / 2015-12-15
 ==================
 
