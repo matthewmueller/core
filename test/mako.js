@@ -588,47 +588,40 @@ describe('Builder()', function () {
     });
 
     describe('events', function () {
-      it(`should emit an analyze event for each file`, function () {
-        let mako = new Builder();
-        let a = fixture('text/a.txt');
-        let b = fixture('text/b.txt');
-        let c = fixture('text/c.txt');
-        let processed = [];
+      [ 'analyze', 'preread', 'read', 'postread', 'predependencies', 'dependencies' ].forEach(function (type) {
+        [ 'before', 'after' ].forEach(function (prefix) {
+          const event = `${prefix}:${type}`;
 
-        mako.dependencies('txt', function (file) {
-          if (file.path === a) {
-            file.addDependency(b);
-          } else if (file.path === b) {
-            file.addDependency(c);
-          }
+          it(`should emit "${event}" for each file`, function () {
+            let mako = new Builder();
+            let a = fixture('text/a.txt');
+            let b = fixture('text/b.txt');
+            let c = fixture('text/c.txt');
+            let processed = [];
+
+            mako
+              .preread('txt', noop)
+              .read('txt', noop)
+              .postread('txt', noop)
+              .predependencies('txt', noop);
+
+            mako.dependencies('txt', function (file) {
+              if (file.path === a) {
+                file.addDependency(b);
+              } else if (file.path === b) {
+                file.addDependency(c);
+              }
+            });
+
+            return mako
+              .on(event, file => processed.push(file.path))
+              .analyze(a)
+              .then(() => assert.deepEqual(processed, [ a, b, c ]));
+          });
         });
-
-        return mako
-          .on('analyze', file => processed.push(file.path))
-          .analyze(a)
-          .then(() => assert.deepEqual(processed, [ a, b, c ]));
       });
 
-      it(`should emit an analyze event for each file`, function () {
-        let mako = new Builder();
-        let a = fixture('text/a.txt');
-        let b = fixture('text/b.txt');
-        let c = fixture('text/c.txt');
-        let processed = [];
-
-        mako.dependencies('txt', function (file) {
-          if (file.path === a) {
-            file.addDependency(b);
-          } else if (file.path === b) {
-            file.addDependency(c);
-          }
-        });
-
-        return mako
-          .on('analyzed', file => processed.push(file.path))
-          .analyze(a)
-          .then(() => assert.deepEqual(processed, [ c, b, a ]));
-      });
+      function noop() {}
     });
 
     context('in parallel', function () {
@@ -860,49 +853,40 @@ describe('Builder()', function () {
     });
 
     describe('events', function () {
-      it('should emit a build event for each entry file', function () {
-        let mako = new Builder();
-        let a = fixture('text/a.txt');
-        let b = fixture('text/b.txt');
-        let c = fixture('text/c.txt');
-        let processed = [];
+      [ 'postdependencies', 'build', 'prewrite', 'write', 'postwrite' ].forEach(function (type) {
+        [ 'before', 'after' ].forEach(function (prefix) {
+          const event = `${prefix}:${type}`;
 
-        mako.dependencies('txt', function (file) {
-          if (file.path === a) {
-            file.addDependency(b);
-          } else if (file.path === b) {
-            file.addDependency(c);
-          }
-        });
+          it(`should emit "${event}" for each file`, function () {
+            let mako = new Builder();
+            let a = fixture('text/a.txt');
+            let b = fixture('text/b.txt');
+            let c = fixture('text/c.txt');
+            let processed = [];
 
-        return mako
-          .on('build', file => processed.push(file.path))
-          .build(a)
-          .then(() => assert.deepEqual(processed, [ a ]));
-      });
+            mako.dependencies('txt', function (file) {
+              if (file.path === a) {
+                file.addDependency(b);
+              } else if (file.path === b) {
+                file.addDependency(c);
+              }
+            });
 
-      [ 'write', 'written' ].forEach(function (event) {
-        it(`should emit a ${event} event for each file`, function () {
-          let mako = new Builder();
-          let a = fixture('text/a.txt');
-          let b = fixture('text/b.txt');
-          let c = fixture('text/c.txt');
-          let processed = [];
+            mako
+              .postdependencies('txt', noop)
+              .prewrite('txt', noop)
+              .write('txt', noop)
+              .postwrite('txt', noop);
 
-          mako.dependencies('txt', function (file) {
-            if (file.path === a) {
-              file.addDependency(b);
-            } else if (file.path === b) {
-              file.addDependency(c);
-            }
+            return mako
+              .on(event, file => processed.push(file.path))
+              .build(a)
+              .then(() => assert.deepEqual(processed, [ c, b, a ]));
           });
-
-          return mako
-            .on(event, file => processed.push(file.path))
-            .build(a)
-            .then(() => assert.deepEqual(processed, [ c, b, a ]));
         });
       });
+
+      function noop() {}
     });
   });
 });
