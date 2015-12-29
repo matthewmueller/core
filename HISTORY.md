@@ -1,4 +1,9 @@
 
+0.5.1 / 2015-12-29
+==================
+
+  * changing events naming convention and emitting hook events
+
 0.5.0 / 2015-12-22
 ==================
 
