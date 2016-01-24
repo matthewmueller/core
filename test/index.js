@@ -2,7 +2,7 @@
 'use strict';
 
 let assert = require('chai').assert;
-let Builder = require('../lib/mako');
+let Runner = require('../lib/runner');
 let mako = require('..');
 
 describe('mako', function () {
@@ -10,7 +10,7 @@ describe('mako', function () {
     assert.isFunction(mako);
   });
 
-  it('should return a builder instance', function () {
-    assert.instanceOf(mako(), Builder);
+  it('should return a runner instance', function () {
+    assert.instanceOf(mako(), Runner);
   });
 });

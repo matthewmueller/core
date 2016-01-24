@@ -1,8 +1,9 @@
 
 'use strict';
 
+let Build = require('../lib/build');
 let chai = require('chai');
-let Builder = require('../lib/mako');
+let Runner = require('../lib/runner');
 let Tree = require('mako-tree');
 let path = require('path');
 
@@ -10,9 +11,9 @@ chai.use(require('chai-as-promised'));
 let assert = chai.assert;
 let fixture = path.resolve.bind(path, __dirname, 'fixtures');
 
-describe('Builder()', function () {
+describe('Runner()', function () {
   it('should be a constructor function', function () {
-    assert.instanceOf(new Builder(), Builder);
+    assert.instanceOf(new Runner(), Runner);
   });
 
   // read hooks
@@ -20,7 +21,7 @@ describe('Builder()', function () {
     describe(`#${hook}(type, handler)`, function () {
       it('should be called upon by analyze', function () {
         let called = [];
-        let mako = new Builder();
+        let mako = new Runner();
 
         mako[hook]('txt', function () {
           called.push(hook);
@@ -33,7 +34,7 @@ describe('Builder()', function () {
 
       it('should only be called on the file type specified', function () {
         let called = [];
-        let mako = new Builder();
+        let mako = new Runner();
 
         mako[hook]('txt', function () {
           called.push(hook);
@@ -50,7 +51,7 @@ describe('Builder()', function () {
 
       it('should call the handlers in the order they were defined', function () {
         let called = [];
-        let mako = new Builder();
+        let mako = new Runner();
 
         mako[hook]('txt', function () {
           called.push(`${hook}1`);
@@ -67,7 +68,7 @@ describe('Builder()', function () {
 
       it('should allow async callback handlers', function () {
         let called = [];
-        let mako = new Builder();
+        let mako = new Runner();
 
         mako[hook]('txt', function (file, tree, mako, done) {
           process.nextTick(function () {
@@ -83,7 +84,7 @@ describe('Builder()', function () {
 
       it('should allow async generator handlers', function () {
         let called = [];
-        let mako = new Builder();
+        let mako = new Runner();
 
         mako[hook]('txt', function* () {
           yield new Promise(function (done) {
@@ -101,7 +102,7 @@ describe('Builder()', function () {
 
       it('should allow async promise handlers', function () {
         let called = [];
-        let mako = new Builder();
+        let mako = new Runner();
 
         mako[hook]('txt', function () {
           return new Promise(function (done) {
@@ -119,7 +120,7 @@ describe('Builder()', function () {
 
       it('should run async handlers in order', function () {
         let called = [];
-        let mako = new Builder();
+        let mako = new Runner();
 
         mako[hook]('txt', function (file, tree, mako, done) {
           setTimeout(function () {
@@ -141,7 +142,7 @@ describe('Builder()', function () {
       });
 
       it('should receive the entry file as an argument', function () {
-        let mako = new Builder();
+        let mako = new Runner();
         let entry = fixture('text/a.txt');
 
         mako[hook]('txt', function (file) {
@@ -152,7 +153,7 @@ describe('Builder()', function () {
       });
 
       it('should receive the tree as an argument', function () {
-        let mako = new Builder();
+        let mako = new Runner();
 
         mako[hook]('txt', function (file, tree) {
           assert.instanceOf(tree, Tree);
@@ -161,18 +162,18 @@ describe('Builder()', function () {
         return mako.analyze(fixture('text/a.txt'));
       });
 
-      it('should receive the builder instance as an argument', function () {
-        let mako = new Builder();
+      it('should receive a build instance as an argument', function () {
+        let mako = new Runner();
 
-        mako[hook]('txt', function (file, tree, builder) {
-          assert.strictEqual(builder, mako);
+        mako[hook]('txt', function (file, tree, build) {
+          assert.instanceOf(build, Build);
         });
 
         return mako.analyze(fixture('text/a.txt'));
       });
 
       it('should support multiple extensions', function () {
-        let mako = new Builder();
+        let mako = new Runner();
 
         mako[hook]([ 'txt', 'md' ], function () {
           assert.isTrue(mako.hooks.has(hook, 'txt'));
@@ -182,7 +183,7 @@ describe('Builder()', function () {
       });
 
       it('should not leave the analyzing flag on when an error is thrown (#7)', function () {
-        let mako = new Builder();
+        let mako = new Runner();
         let entry = fixture('text/a.txt');
         let tree = mako.tree;
 
@@ -197,25 +198,31 @@ describe('Builder()', function () {
     });
   });
 
-  // write hooks
+  // assemble hooks
   [ 'postdependencies', 'prewrite', 'write', 'postwrite' ].forEach(function (hook) {
     describe(`#${hook}(type, handler)`, function () {
-      it('should be called upon by build', function () {
+      it('should be called during assemble', function () {
         let called = [];
-        let mako = new Builder();
+        let mako = new Runner();
+        let entry = fixture('text/a.txt');
+
+        mako.tree.addFile(entry);
 
         mako[hook]('txt', function () {
           called.push(hook);
         });
 
-        return mako.build(fixture('text/a.txt')).then(function () {
+        return mako.build(entry).then(function () {
           assert.deepEqual(called, [ hook ]);
         });
       });
 
       it('should only be called on the file type specified', function () {
         let called = [];
-        let mako = new Builder();
+        let mako = new Runner();
+        let entry = fixture('text/a.txt');
+
+        mako.tree.addFile(entry);
 
         mako[hook]('txt', function () {
           called.push(hook);
@@ -225,14 +232,17 @@ describe('Builder()', function () {
           called.push(hook);
         });
 
-        return mako.build(fixture('text/a.txt')).then(function () {
+        return mako.assemble(entry).then(function () {
           assert.deepEqual(called, [ hook ]);
         });
       });
 
       it('should call the handlers in the order they were defined', function () {
         let called = [];
-        let mako = new Builder();
+        let mako = new Runner();
+        let entry = fixture('text/a.txt');
+
+        mako.tree.addFile(entry);
 
         mako[hook]('txt', function () {
           called.push(`${hook}1`);
@@ -242,14 +252,17 @@ describe('Builder()', function () {
           called.push(`${hook}2`);
         });
 
-        return mako.build(fixture('text/a.txt')).then(function () {
+        return mako.assemble(entry).then(function () {
           assert.deepEqual(called, [ `${hook}1`, `${hook}2` ]);
         });
       });
 
       it('should allow async callback handlers', function () {
         let called = [];
-        let mako = new Builder();
+        let mako = new Runner();
+        let entry = fixture('text/a.txt');
+
+        mako.tree.addFile(entry);
 
         mako[hook]('txt', function (file, tree, mako, done) {
           process.nextTick(function () {
@@ -258,14 +271,17 @@ describe('Builder()', function () {
           });
         });
 
-        return mako.build(fixture('text/a.txt')).then(function () {
+        return mako.assemble(entry).then(function () {
           assert.deepEqual(called, [ hook ]);
         });
       });
 
       it('should allow async generator handlers', function () {
         let called = [];
-        let mako = new Builder();
+        let mako = new Runner();
+        let entry = fixture('text/a.txt');
+
+        mako.tree.addFile(entry);
 
         mako[hook]('txt', function* () {
           yield new Promise(function (done) {
@@ -276,14 +292,17 @@ describe('Builder()', function () {
           });
         });
 
-        return mako.build(fixture('text/a.txt')).then(function () {
+        return mako.assemble(entry).then(function () {
           assert.deepEqual(called, [ hook ]);
         });
       });
 
       it('should allow async promise handlers', function () {
         let called = [];
-        let mako = new Builder();
+        let mako = new Runner();
+        let entry = fixture('text/a.txt');
+
+        mako.tree.addFile(entry);
 
         mako[hook]('txt', function () {
           return new Promise(function (done) {
@@ -294,14 +313,17 @@ describe('Builder()', function () {
           });
         });
 
-        return mako.build(fixture('text/a.txt')).then(function () {
+        return mako.assemble(entry).then(function () {
           assert.deepEqual(called, [ hook ]);
         });
       });
 
       it('should run async handlers in order', function () {
         let called = [];
-        let mako = new Builder();
+        let mako = new Runner();
+        let entry = fixture('text/a.txt');
+
+        mako.tree.addFile(entry);
 
         mako[hook]('txt', function (file, tree, mako, done) {
           setTimeout(function () {
@@ -317,47 +339,55 @@ describe('Builder()', function () {
           });
         });
 
-        return mako.build(fixture('text/a.txt')).then(function () {
+        return mako.assemble(entry).then(function () {
           assert.deepEqual(called, [ `${hook}1`, `${hook}2` ]);
         });
       });
 
       it('should receive the entry file as an argument', function () {
-        let mako = new Builder();
+        let mako = new Runner();
         let entry = fixture('text/a.txt');
+
+        mako.tree.addFile(entry);
 
         mako[hook]('txt', function (file) {
           assert.equal(file.path, entry);
         });
 
-        return mako.build(entry);
+        return mako.assemble(entry);
       });
 
       it('should receive the tree as an argument', function () {
-        let mako = new Builder();
+        let mako = new Runner();
+        let entry = fixture('text/a.txt');
+
+        mako.tree.addFile(entry);
 
         mako[hook]('txt', function (file, tree) {
           assert.instanceOf(tree, Tree);
         });
 
-        return mako.build(fixture('text/a.txt'));
+        return mako.assemble(entry);
       });
 
-      it('should receive the builder instance as an argument', function () {
-        let mako = new Builder();
+      it('should receive a build instance as an argument', function () {
+        let mako = new Runner();
+        let entry = fixture('text/a.txt');
 
-        mako[hook]('txt', function (file, tree, builder) {
-          assert.strictEqual(builder, mako);
+        mako.tree.addFile(entry);
+
+        mako[hook]('txt', function (file, tree, build) {
+          assert.instanceOf(build, Build);
         });
 
-        return mako.build(fixture('text/a.txt'));
+        return mako.assemble(entry);
       });
     });
   });
 
   describe('#use(...plugins)', function () {
     it('should pass a function the builder instance', function () {
-      let mako = new Builder();
+      let mako = new Runner();
       let called = false;
       mako.use(function (builder) {
         called = true;
@@ -367,7 +397,7 @@ describe('Builder()', function () {
     });
 
     it('should flatten the arguments into a single list', function () {
-      let mako = new Builder();
+      let mako = new Runner();
       let called = [];
 
       mako.use(plugin1, [ plugin2, [ plugin3 ] ]);
@@ -390,7 +420,7 @@ describe('Builder()', function () {
     });
 
     it('should be chainable', function () {
-      let mako = new Builder();
+      let mako = new Runner();
       assert.strictEqual(mako.use(plugin), mako);
 
       function plugin() {}
@@ -399,25 +429,25 @@ describe('Builder()', function () {
 
   describe('#analyze(...entries)', function () {
     it('should return a Promise', function () {
-      let mako = new Builder();
+      let mako = new Runner();
       let entry = fixture('text/a.txt');
       assert.instanceOf(mako.analyze(entry), Promise);
     });
 
     it('should require the entry argument', function () {
-      let mako = new Builder();
+      let mako = new Runner();
       return assert.isRejected(mako.analyze(), /^Error: an entry file is required$/);
     });
 
     it('should resolve with a tree instance', function () {
-      let mako = new Builder();
+      let mako = new Runner();
       let entry = fixture('text/a.txt');
       assert.eventually.instanceOf(mako.analyze(entry), Tree);
     });
 
     it('should call the read/dependency hooks in order', function () {
       let called = [];
-      let mako = new Builder();
+      let mako = new Runner();
 
       mako.preread('txt', function () {
         called.push('preread');
@@ -442,7 +472,7 @@ describe('Builder()', function () {
 
     it('should use the original type for the preread hook', function () {
       let called = [];
-      let mako = new Builder();
+      let mako = new Runner();
       let entry = fixture('jade/index.jade');
 
       mako.preread('jade', function () {
@@ -466,7 +496,7 @@ describe('Builder()', function () {
     });
 
     it('should share the arguments between the read/dependency hooks', function () {
-      let mako = new Builder();
+      let mako = new Runner();
       let args;
 
       mako.preread('txt', function (file, tree, builder) {
@@ -495,7 +525,7 @@ describe('Builder()', function () {
     });
 
     it('should recurse into any dependencies added during the dependencies hook', function () {
-      let mako = new Builder();
+      let mako = new Runner();
       let entry = fixture('text/a.txt');
       let dep = fixture('text/b.txt');
       let processed = [];
@@ -515,7 +545,7 @@ describe('Builder()', function () {
 
     it('should handle circular dependencies', function () {
       // circular: a -> b -> c -> b
-      let mako = new Builder();
+      let mako = new Runner();
       let entry = fixture('text/a.txt');
       let dep1 = fixture('text/b.txt');
       let dep2 = fixture('text/c.txt');
@@ -538,7 +568,7 @@ describe('Builder()', function () {
     });
 
     it('should re-analyze deep files marked as dirty', function () {
-      let mako = new Builder();
+      let mako = new Runner();
       let a = fixture('text/a.txt');
       let b = fixture('text/b.txt');
       let c = fixture('text/c.txt');
@@ -563,7 +593,7 @@ describe('Builder()', function () {
     });
 
     it('should always preread files during different builds', function () {
-      let mako = new Builder();
+      let mako = new Runner();
       let a = fixture('text/a.txt');
       let b = fixture('text/b.txt');
       let c = fixture('text/c.txt');
@@ -593,7 +623,7 @@ describe('Builder()', function () {
           const event = `${prefix}:${type}`;
 
           it(`should emit "${event}" for each file`, function () {
-            let mako = new Builder();
+            let mako = new Runner();
             let a = fixture('text/a.txt');
             let b = fixture('text/b.txt');
             let c = fixture('text/c.txt');
@@ -628,7 +658,7 @@ describe('Builder()', function () {
       [ 'preread', 'read', 'postread', 'predependencies', 'dependencies' ].forEach(function (hook) {
         context(hook, function () {
           it(`should not call the ${hook} hook multiple times`, function () {
-            let mako = new Builder();
+            let mako = new Runner();
             let entry = fixture('text/a.txt');
             let processed = [];
 
@@ -650,7 +680,7 @@ describe('Builder()', function () {
     context('in serial', function () {
       context('preread', function () {
         it('should always call the preread hook', function () {
-          let mako = new Builder();
+          let mako = new Runner();
           let entry = fixture('text/a.txt');
           let processed = [];
 
@@ -667,7 +697,7 @@ describe('Builder()', function () {
       [ 'read', 'postread', 'predependencies', 'dependencies' ].forEach(function (hook) {
         context(hook, function () {
           it(`should not call the ${hook} hook each time`, function () {
-            let mako = new Builder();
+            let mako = new Runner();
             let entry = fixture('text/a.txt');
             let processed = [];
 
@@ -681,7 +711,7 @@ describe('Builder()', function () {
           });
 
           it(`should call the ${hook} hook if the preread hook marks file as dirty`, function () {
-            let mako = new Builder();
+            let mako = new Runner();
             let entry = fixture('text/a.txt');
             let processed = [];
 
@@ -702,27 +732,27 @@ describe('Builder()', function () {
     });
   });
 
-  describe('#build(...entries)', function () {
+  describe('#assemble(...entries)', function () {
     it('should return a Promise', function () {
-      let mako = new Builder();
+      let mako = new Runner();
       let entry = fixture('text/a.txt');
       assert.instanceOf(mako.build(entry), Promise);
     });
 
     it('should require the entry argument', function () {
-      let mako = new Builder();
+      let mako = new Runner();
       return assert.isRejected(mako.build(), /^Error: an entry file is required$/);
     });
 
     it('should resolve with a tree instance', function () {
-      let mako = new Builder();
+      let mako = new Runner();
       let entry = fixture('text/a.txt');
       assert.eventually.instanceOf(mako.build(entry), Tree);
     });
 
     it('should call postdependencies in sequential order (not in parallel)', function () {
       // a -> b -> c
-      let mako = new Builder();
+      let mako = new Runner();
       let entry = fixture('text/a.txt');
       let dep1 = fixture('text/b.txt');
       let dep2 = fixture('text/c.txt');
@@ -761,7 +791,7 @@ describe('Builder()', function () {
 
     it('should call the write hooks in order', function () {
       let called = [];
-      let mako = new Builder();
+      let mako = new Runner();
 
       mako.prewrite('txt', function () {
         called.push('prewrite');
@@ -781,7 +811,7 @@ describe('Builder()', function () {
     });
 
     it('should share the arguments between the write hooks', function () {
-      let mako = new Builder();
+      let mako = new Runner();
       let args;
 
       mako.prewrite('txt', function (file, tree, builder) {
@@ -805,7 +835,7 @@ describe('Builder()', function () {
 
     it('should call hooks for all defined dependencies', function () {
       // a -> b -> c -> b* (circular)
-      let mako = new Builder();
+      let mako = new Runner();
       let entry = fixture('text/a.txt');
       let dep1 = fixture('text/b.txt');
       let dep2 = fixture('text/c.txt');
@@ -829,7 +859,7 @@ describe('Builder()', function () {
 
     it('should call build hooks on dependencies first (bottom-up)', function () {
       // a -> b -> c
-      let mako = new Builder();
+      let mako = new Runner();
       let entry = fixture('text/a.txt');
       let dep1 = fixture('text/b.txt');
       let dep2 = fixture('text/c.txt');
@@ -858,7 +888,7 @@ describe('Builder()', function () {
           const event = `${prefix}:${type}`;
 
           it(`should emit "${event}" for each file`, function () {
-            let mako = new Builder();
+            let mako = new Runner();
             let a = fixture('text/a.txt');
             let b = fixture('text/b.txt');
             let c = fixture('text/c.txt');
