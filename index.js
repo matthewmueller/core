@@ -1,8 +1,8 @@
 
 'use strict';
 
-let Builder = require('./lib/mako');
+let Runner = require('./lib/runner');
 
 module.exports = function () {
-  return new Builder();
+  return new Runner();
 };
