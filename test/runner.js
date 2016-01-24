@@ -439,10 +439,10 @@ describe('Runner()', function () {
       return assert.isRejected(mako.analyze(), /^Error: an entry file is required$/);
     });
 
-    it('should resolve with a tree instance', function () {
+    it('should resolve with a build instance', function () {
       let mako = new Runner();
       let entry = fixture('text/a.txt');
-      assert.eventually.instanceOf(mako.analyze(entry), Tree);
+      return assert.eventually.instanceOf(mako.analyze(entry), Build);
     });
 
     it('should call the read/dependency hooks in order', function () {
@@ -744,10 +744,29 @@ describe('Runner()', function () {
       return assert.isRejected(mako.build(), /^Error: an entry file is required$/);
     });
 
-    it('should resolve with a tree instance', function () {
+    it('should resolve with a build instance', function () {
       let mako = new Runner();
       let entry = fixture('text/a.txt');
-      assert.eventually.instanceOf(mako.build(entry), Tree);
+      return assert.eventually.instanceOf(mako.assemble(entry), Build);
+    });
+  });
+
+  describe('#build(...entries)', function () {
+    it('should return a Promise', function () {
+      let mako = new Runner();
+      let entry = fixture('text/a.txt');
+      assert.instanceOf(mako.build(entry), Promise);
+    });
+
+    it('should require the entry argument', function () {
+      let mako = new Runner();
+      return assert.isRejected(mako.build(), /^Error: an entry file is required$/);
+    });
+
+    it('should resolve with a build instance', function () {
+      let mako = new Runner();
+      let entry = fixture('text/a.txt');
+      return assert.eventually.instanceOf(mako.build(entry), Build);
     });
 
     it('should call postdependencies in sequential order (not in parallel)', function () {
