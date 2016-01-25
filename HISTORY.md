@@ -1,4 +1,9 @@
 
+0.7.1 / 2016-01-24
+==================
+
+  * need to update the tree instance in the build object
+
 0.7.0 / 2016-01-24
 ==================
 
