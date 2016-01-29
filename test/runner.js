@@ -744,9 +744,10 @@ describe('Runner()', function () {
       return assert.isRejected(mako.build(), /^Error: an entry file is required$/);
     });
 
-    it('should resolve with a build instance', function () {
+    it.only('should resolve with a build instance', function () { // eslint-disable-line
       let mako = new Runner();
       let entry = fixture('text/a.txt');
+      mako.tree.addFile(entry);
       return assert.eventually.instanceOf(mako.assemble(entry), Build);
     });
   });
