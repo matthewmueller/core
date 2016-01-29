@@ -3,9 +3,10 @@
 > A pluggable build tool built around dependency trees.
 
 [![npm version](https://img.shields.io/npm/v/mako.svg)](https://www.npmjs.com/package/mako)
+[![build status](https://img.shields.io/travis/makojs/core.svg)](https://travis-ci.org/makojs/core)
 [![npm dependencies](https://img.shields.io/david/makojs/core.svg)](https://david-dm.org/makojs/core)
 [![npm dev dependencies](https://img.shields.io/david/dev/makojs/core.svg)](https://david-dm.org/makojs/core#info=devDependencies)
-[![build status](https://img.shields.io/travis/makojs/core.svg)](https://travis-ci.org/makojs/core)
+[![gitter](https://img.shields.io/gitter/room/makojs/general.svg)](https://gitter.im/makojs/general)
 
 ## What is this?
 
