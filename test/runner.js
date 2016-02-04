@@ -744,7 +744,7 @@ describe('Runner()', function () {
       return assert.isRejected(mako.build(), /^Error: an entry file is required$/);
     });
 
-    it.only('should resolve with a build instance', function () { // eslint-disable-line
+    it('should resolve with a build instance', function () {
       let mako = new Runner();
       let entry = fixture('text/a.txt');
       mako.tree.addFile(entry);
@@ -903,7 +903,7 @@ describe('Runner()', function () {
     });
 
     describe('events', function () {
-      [ 'postdependencies', 'build', 'prewrite', 'write', 'postwrite' ].forEach(function (type) {
+      [ 'postdependencies', 'assemble', 'prewrite', 'write', 'postwrite' ].forEach(function (type) {
         [ 'before', 'after' ].forEach(function (prefix) {
           const event = `${prefix}:${type}`;
 
