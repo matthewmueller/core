@@ -11,9 +11,15 @@ chai.use(require('chai-as-promised'));
 let assert = chai.assert;
 let fixture = path.resolve.bind(path, __dirname, 'fixtures');
 
-describe('Runner()', function () {
+describe('Runner([tree])', function () {
   it('should be a constructor function', function () {
     assert.instanceOf(new Runner(), Runner);
+  });
+
+  it('should allow setting a predefined tree', function () {
+    let tree = new Tree();
+    let runner = new Runner(tree);
+    assert.strictEqual(runner.tree, tree);
   });
 
   // read hooks
