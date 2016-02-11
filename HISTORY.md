@@ -1,4 +1,10 @@
 
+0.8.0 / 2016-02-10
+==================
+
+  * removing circular deps before assemble
+  * allow defining a predefined tree for a runner
+
 0.7.4 / 2016-02-03
 ==================
 

@@ -1,6 +1,6 @@
 {
   "name": "mako",
-  "version": "0.7.4",
+  "version": "0.8.0",
   "description": "A pluggable general-purpose build tool",
   "keywords": [
     "generic",
