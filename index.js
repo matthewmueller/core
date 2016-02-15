@@ -3,6 +3,6 @@
 
 let Runner = require('./lib/runner');
 
-module.exports = function () {
-  return new Runner();
+module.exports = function (tree) {
+  return new Runner(tree);
 };
