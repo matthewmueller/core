@@ -1,4 +1,9 @@
 
+0.8.1 / 2016-02-15
+==================
+
+  * pass tree argument through the simple factory
+
 0.8.0 / 2016-02-10
 ==================
 
