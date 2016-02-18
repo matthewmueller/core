@@ -1,4 +1,10 @@
 
+0.8.2 / 2016-02-17
+==================
+
+  * adding debug line about preexisting tree
+  * update eslint and config
+
 0.8.1 / 2016-02-15
 ==================
 
