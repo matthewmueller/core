@@ -1,4 +1,10 @@
 
+0.9.0 / 2016-02-21
+==================
+
+  * adding more parallelization to the assemble phase, allowing prewrite to modify the tree
+  * using a queue during analyze instead of stair-stepping
+
 0.8.4 / 2016-02-17
 ==================
 
