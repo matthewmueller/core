@@ -859,6 +859,24 @@ describe('Runner([tree])', function () {
       return mako.build(fixture('text/a.txt'));
     });
 
+    it('should continue processing files added during prewrite hooks', function () {
+      let tree = new Tree();
+      tree.addFile('a.txt');
+
+      let mako = new Runner(tree);
+      let processed = [];
+
+      mako.prewrite('txt', function (file) {
+        if (file.path === 'a.txt') file.addDependency('b.txt');
+        if (file.path === 'b.txt') file.addDependency('c.txt');
+        processed.push(file.path);
+      });
+
+      return mako.build('a.txt').then(function () {
+        assert.deepEqual(processed, [ 'a.txt', 'b.txt', 'c.txt' ]);
+      });
+    });
+
     it('should call hooks for all defined dependencies', function () {
       // a -> b -> c -> b* (circular)
       let mako = new Runner();
