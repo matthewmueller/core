@@ -1,4 +1,9 @@
 
+0.9.1 / 2016-02-23
+==================
+
+  * allow prewrite hook to add more files to the tree that will also be passed through the prewrite phase
+
 0.9.0 / 2016-02-21
 ==================
 
