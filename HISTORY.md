@@ -1,4 +1,9 @@
 
+0.9.2 / 2016-02-23
+==================
+
+  * setting default concurrency, adding limits in some phases of build
+
 0.9.1 / 2016-02-23
 ==================
 
